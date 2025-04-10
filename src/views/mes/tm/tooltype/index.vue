@@ -555,7 +555,7 @@ export default {
       return url; // 如果没有以 '/' 结尾，则原样返回
     },
     getSaleOrders(a,state,state1){
-      this.total =0
+
       this.tooltypeList = []
       this.workorderList = this.tooltypeList
       this.qufen=0
@@ -614,6 +614,7 @@ export default {
           this.workorderList = this.tooltypeList
         }
         this.loading = false;
+
       })
       a=null
     },
