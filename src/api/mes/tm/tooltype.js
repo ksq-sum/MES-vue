@@ -94,3 +94,20 @@ export function updateState(data) {
     data: data
   })
 }
+
+//查询销售订单全部数据
+export function selectAll() {
+  return request({
+    url: '/sales-orders-sku/selectAll',
+    method: 'get'
+  })
+}
+
+//查询sku
+export function selectsku(data) {
+  return request({
+    url: '/basicOpen/multiplatform/shopify/variantList',
+    method: 'post',
+    data: data
+  })
+}

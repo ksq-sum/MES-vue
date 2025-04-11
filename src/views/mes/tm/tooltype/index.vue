@@ -300,7 +300,8 @@
 </template>
 
 <script>
-import { listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,cgSeller,createOrders ,updateState} from "@/api/mes/tm/tooltype";
+import { listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,cgSeller,createOrders ,updateState,selectAll,selectsku} from "@/api/mes/tm/tooltype";
+import {getSkuActiveItems} from '@/api/mes/md/mdItem'
 import { getToken } from "@/utils/auth";
 import {genCode} from "@/api/system/autocode/rule"
 import { Message } from 'element-ui';
@@ -378,9 +379,23 @@ export default {
       selectAll:false
     };
   },
-  created() {
+  async created() {
     // this.getList();
-    this.getSaleOrders();
+    await this.getSaleOrders();
+
+    // getSkuActiveItems().then(f => {
+    //   selectAll().then(f1=>{
+    //     const f2=[...f1]
+    //    f2.forEach(fo=>{
+    //       const existsInF = f.find(fi => {console.log(fi.sku,fo.sku)});
+    //       console.log(existsInF)
+    //    })
+    //   })
+    // });
+
+
+
+
   },
   methods: {
     click_works(){
