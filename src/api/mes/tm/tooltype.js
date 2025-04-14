@@ -106,8 +106,17 @@ export function selectAll() {
 //查询sku
 export function selectsku(data) {
   return request({
-    url: '/basicOpen/multiplatform/shopify/variantList',
+    url: 'https://openapi.lingxing.com/basicOpen/multiplatform/shopify/variantList',
     method: 'post',
-    data: data
+    params: data
   })
 }
+
+//erp接口参数
+export function erpParams() {
+  return request({
+    url: '/erpParams',
+    method: 'get'
+  })
+}
+

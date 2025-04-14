@@ -300,7 +300,7 @@
 </template>
 
 <script>
-import { listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,cgSeller,createOrders ,updateState,selectAll,selectsku} from "@/api/mes/tm/tooltype";
+import {Token, listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,cgSeller,createOrders ,updateState,selectAll,selectsku,erpParams} from "@/api/mes/tm/tooltype";
 import {getSkuActiveItems} from '@/api/mes/md/mdItem'
 import { getToken } from "@/utils/auth";
 import {genCode} from "@/api/system/autocode/rule"
@@ -383,15 +383,41 @@ export default {
     // this.getList();
     await this.getSaleOrders();
 
-    // getSkuActiveItems().then(f => {
-    //   selectAll().then(f1=>{
-    //     const f2=[...f1]
-    //    f2.forEach(fo=>{
-    //       const existsInF = f.find(fi => {console.log(fi.sku,fo.sku)});
-    //       console.log(existsInF)
-    //    })
-    //   })
-    // });
+    const data={
+      access_token:'' ,
+      sign:'' ,
+      timestamp:'' ,
+      app_key:'',
+      local_sku:[]
+    }
+
+    await getSkuActiveItems().then(activeItems => {
+      selectAll().then(allItems => {
+        // 1. 获取activeItems的所有sku（Set用于快速查找）
+        const activeSkus = new Set(activeItems.map(item => item.sku));
+        // 2. 筛选allItems中不存在于activeItems的sku，并去重
+        const uniqueSkus = [
+          ...new Set(  // 去重
+            allItems
+              .filter(item => !activeSkus.has(item.sku))  // 筛选不存在的
+              .map(item => item.sku)  // 只提取sku
+          )
+        ];
+        console.log('SKU数组:', uniqueSkus);
+        data.local_sku =[...uniqueSkus];
+      });
+    });
+
+
+    erpParams().then(f=>{
+      data.access_token=f.token
+      data.sign=f.sign
+      data.timestamp=f.time
+      data.app_key=f.appid
+      // selectsku({"access_token":data.access_token,"sign":data.sign,"timestamp":data.timestamp,"app_key":data.app_key,"local_sku":data.local_sku}).then(res=>{
+      //   console.log(res)
+      // })
+    })
 
 
 
