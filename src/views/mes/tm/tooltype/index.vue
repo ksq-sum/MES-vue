@@ -35,9 +35,9 @@
 
     <el-row :gutter="10" class="mb8">
       <el-button @click="click_create" style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: lightskyblue;border: 1px solid cornflowerblue;">生产工单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;">已逾期</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;">异常订单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;">待审核</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1)">已逾期</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5)">异常订单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0)">待审核</el-button>
       <el-button v-if="qufen==1" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button>
       <el-button style="color:white;background-color:blue;height:35px;" v-if="qufen==1" @click="click_works">
         创建生产工单</el-button>
@@ -485,6 +485,17 @@ export default {
         // }
       });
     },
+    shaixuan(state){
+      this.queryParams.pageNum=1
+      this.queryParams.pageSize=10
+
+      if(state!=-1){
+        this.getSaleOrders(state,null,null,null)
+      }else{
+        this.getSaleOrders(null,null,null,1)
+      }
+
+    },
     //多选框判断选中未选中
     handleSelectChange(workorder){
       console.log(this.arrs.length,this.workorderList.length)
@@ -632,8 +643,8 @@ export default {
       }
       return url; // 如果没有以 '/' 结尾，则原样返回
     },
-    getSaleOrders(a,state,state1){
-
+    getSaleOrders(a,state,state1,ifOutTime){
+      console.log(a)
       this.tooltypeList = []
       this.workorderList = this.tooltypeList
       this.qufen=0
@@ -645,7 +656,9 @@ export default {
         platformStatus:a,
         a:state,
         b:state1,
-        timeout: 12000     // 超时时间(ms)
+        globalOrderNo:this.queryParams.globalOrderNo,
+        ifOutTime:ifOutTime,
+        timeout: 12000    // 超时时间(ms)
       }
       ).then(response => {
         // 遍历响应数据，并处理 product_image 字段
@@ -688,6 +701,7 @@ export default {
           });
           this.total =response.pages;
           this.tooltypeList = response.data;
+          this.queryParams.globalOrderNo=null
           console.log(response)
           this.workorderList = this.tooltypeList
         }
@@ -726,7 +740,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      // this.getSaleOrders();
+      this.getSaleOrders();
     },
     /** 重置按钮操作 */
     resetQuery() {
