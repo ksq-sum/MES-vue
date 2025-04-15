@@ -1,15 +1,15 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
-      <el-form-item label="类型编码" prop="globalOrderNo">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px" style="margin-left:-25px">
+      <el-form-item label="订单编号" prop="globalOrderNo">
         <el-input
           v-model="queryParams.globalOrderNo"
-          placeholder="请输入类型编码"
+          placeholder="请输入订单编号"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="类型名称" prop="platformOrderName">
+      <!-- <el-form-item label="类型名称" prop="platformOrderName">
         <el-input
           v-model="queryParams.platformOrderName"
           placeholder="请输入类型名称"
@@ -26,7 +26,7 @@
             :value="dict.value"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -35,6 +35,9 @@
 
     <el-row :gutter="10" class="mb8">
       <el-button @click="click_create" style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: lightskyblue;border: 1px solid cornflowerblue;">生产工单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;">已逾期</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;">异常订单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;">待审核</el-button>
       <el-button v-if="qufen==1" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button>
       <el-button style="color:white;background-color:blue;height:35px;" v-if="qufen==1" @click="click_works">
         创建生产工单</el-button>
@@ -111,7 +114,8 @@
           </th>
           <th style="width: 180px">订单编号</th>
           <th v-if="!isAnyExpanded" style="width: 150px">店铺订单号</th>
-          <th v-if="!isAnyExpanded" style="width: 200px">订单状态</th>
+          <th v-if="!isAnyExpanded" style="width: 200px">erp订单状态</th>
+          <th v-if="!isAnyExpanded" style="width: 200px">MES状态</th>
           <th v-if="!isAnyExpanded" style="width: 200px">订单备注</th>
           <th v-if="!isAnyExpanded" style="width: 150px">预计结束时间</th>
           <th v-if="!isAnyExpanded" style="width: 150px">实际结束时间</th>
@@ -136,7 +140,8 @@
             </td>
             <td>{{ workorder.globalOrderNo }}</td>
             <td v-if="!isAnyExpanded">{{ workorder.platformOrderName }}</td>
-            <td v-if="!isAnyExpanded">{{ formatOrderStatus(workorder.requestStatus) }}</td>
+            <td v-if="!isAnyExpanded" style="color:grey">{{ requestStatus(workorder.requestStatus) }}</td>
+            <td v-if="!isAnyExpanded">{{ platformStatus(workorder.platformStatus) }}</td>
             <td v-if="!isAnyExpanded">{{ workorder.remark }}</td>
             <td v-if="!isAnyExpanded">{{ workorder.planEndTime }}</td>
             <td v-if="!isAnyExpanded">{{ workorder.realEndTime }}</td>
@@ -168,7 +173,8 @@
               </td>
               <td class="child-cell">{{ child.globalOrderNo }}</td>
               <td class="child-cell" v-if="!isAnyExpanded">{{ child.platformOrderName }}</td>
-              <td class="child-cell" v-if="!isAnyExpanded">{{ formatOrderStatus(child.requestStatus) }}</td>
+              <td class="child-cell" v-if="!isAnyExpanded" style="color:grey">{{ formatOrderStatus(child.ifFinish) }}</td>
+               <td class="child-cell" v-if="!isAnyExpanded"></td>
               <td class="child-cell" v-if="!isAnyExpanded">{{ child.remark }}</td>
               <td class="child-cell" v-if="!isAnyExpanded">{{ child.planEndTime }}</td>
               <td class="child-cell" v-if="!isAnyExpanded">{{ child.realEndTime }}</td>
@@ -382,15 +388,11 @@ export default {
   async created() {
     // this.getList();
     await this.getSaleOrders();
-
+    //sku数据存储
     const data={
-      access_token:'' ,
-      sign:'' ,
-      timestamp:'' ,
-      app_key:'',
       local_sku:[]
     }
-
+    //比较商品表 和销售订单表
     await getSkuActiveItems().then(activeItems => {
       selectAll().then(allItems => {
         // 1. 获取activeItems的所有sku（Set用于快速查找）
@@ -405,19 +407,38 @@ export default {
         ];
         console.log('SKU数组:', uniqueSkus);
         data.local_sku =[...uniqueSkus];
+        data.local_sku= data.local_sku.filter(item => item);
+        console.log("最终:",data.local_sku)
       });
     });
 
 
-    erpParams().then(f=>{
-      data.access_token=f.token
-      data.sign=f.sign
-      data.timestamp=f.time
-      data.app_key=f.appid
-      // selectsku({"access_token":data.access_token,"sign":data.sign,"timestamp":data.timestamp,"app_key":data.app_key,"local_sku":data.local_sku}).then(res=>{
-      //   console.log(res)
-      // })
-    })
+
+
+
+
+
+
+
+
+
+
+    // if(data.local_sku.length>0){
+    // }
+    // selectsku(data.local_sku).then(res=>{
+    //   console.log(res)
+    // })
+
+    // erpParams().then(f=>{
+    //   data.access_token=f.token
+    //   data.sign=f.sign
+    //   data.timestamp=f.time
+    //   data.app_key=f.appid
+    // access_token:'' ,
+    // sign:'' ,
+    // timestamp:'' ,
+    // app_key:'',
+    // })
 
 
 
@@ -545,6 +566,9 @@ export default {
       }
     },
     formatOrderStatus(status) {
+      return status==1?'已完成':'未完成'
+    },
+    requestStatus(status) {
       const statusMap = {
         1: "同步中",
         2: "已同步",
@@ -556,7 +580,20 @@ export default {
         8: "不显示",
         9: "平台发货"
       };
-      return statusMap[status] || "未知状态"; // 默认返回 '未知状态'
+
+      return statusMap[status]
+    },
+    platformStatus(status) {
+      const statusMap = {
+        0: "待审核",
+        1: "待生产",
+        2: "进行中",
+        3: "已结束",
+        4: "已逾期",
+        5: "异常订单",
+        6: "进行中(异常)"
+      };
+      return statusMap[status]
     },
     toggleChildren(globalOrderNo) {
       console.log(globalOrderNo)
@@ -689,7 +726,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      this.getList();
+      // this.getSaleOrders();
     },
     /** 重置按钮操作 */
     resetQuery() {

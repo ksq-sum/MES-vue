@@ -106,9 +106,9 @@ export function selectAll() {
 //查询sku
 export function selectsku(data) {
   return request({
-    url: 'https://openapi.lingxing.com/basicOpen/multiplatform/shopify/variantList',
+    url: '/Active',
     method: 'post',
-    params: data
+    data: data
   })
 }
 
