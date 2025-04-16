@@ -35,9 +35,9 @@
 
     <el-row :gutter="10" class="mb8">
       <el-button @click="click_create" style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: lightskyblue;border: 1px solid cornflowerblue;">生产工单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1)">已逾期</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5)">异常订单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0)">待审核</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1,'yq')">已逾期</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5,'yc')">异常订单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0,'sk')">待审核</el-button>
       <el-button v-if="qufen==1" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button>
       <el-button style="color:white;background-color:blue;height:35px;" v-if="qufen==1" @click="click_works">
         创建生产工单</el-button>
@@ -485,10 +485,10 @@ export default {
         // }
       });
     },
-    shaixuan(state){
+    shaixuan(state,a){
       this.queryParams.pageNum=1
       this.queryParams.pageSize=10
-
+      this.qufen=a
       if(state!=-1){
         this.getSaleOrders(state,null,null,null)
       }else{
@@ -515,6 +515,12 @@ export default {
     getWorkorderList(){
      if(this.qufen==1){
        this.getSaleOrders(1,4,5)
+     }else if(this.qufen=='yq'){
+       this.getSaleOrders(null,null,null,1)
+     }else if(this.qufen=='yc'){
+       this.getSaleOrders(5,null,null,null)
+     }else if(this.qufen=='sk'){
+       this.getSaleOrders(0,null,null,null)
      }else{
        this.getSaleOrders()
      }
@@ -647,7 +653,6 @@ export default {
       console.log(a)
       this.tooltypeList = []
       this.workorderList = this.tooltypeList
-      this.qufen=0
       this.loading = true;
       getSaleOrders(
       {
