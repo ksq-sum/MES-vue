@@ -34,11 +34,12 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-button @click="click_create" style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: lightskyblue;border: 1px solid cornflowerblue;">生产工单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1,'yq')">已逾期</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5,'yc')">异常订单</el-button>
-      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0,'sk')">待审核</el-button>
+      <el-button @click="click_create();setActive('sc')" style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: lightskyblue;border: 1px solid cornflowerblue;" :class="{ 'active-button': activeButton === 'sc' }">生产工单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1,'yq');setActive('yq')" :class="{ 'active-button': activeButton === 'yq' }">已逾期</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5,'yc');setActive('yc')" :class="{ 'active-button': activeButton === 'yc' }">异常订单</el-button>
+      <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0,'sk');setActive('sh')" :class="{ 'active-button': activeButton === 'sh' }">待审核</el-button>
 <!--      <el-button v-if="qufen==1 || qufen!='yq'|| qufen!=yc || qufen!='sk'" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button> -->
+      <el-button style="margin-left:8px;height:35px;font-size:15px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs();setActive('qb')" :class="{ 'active-button': activeButton === 'qb' }">全部</el-button>
       <el-button style="color:white;background-color:blue;height:35px;" v-if="qufen==1" @click="click_works">
         创建生产工单</el-button>
       <el-col :span="1.5">
@@ -155,7 +156,7 @@
             <td></td>
             <td></td>
             <td>
-              <div v-if="workorder.platformStatus === 0 && [4, 5].includes(workorder.requestStatus)">
+              <div v-if="workorder.platformStatus === 0 && [4].includes(workorder.requestStatus)">
                 <el-button type="success" size="small" @click.stop="passEdit(workorder,1)">通过</el-button>
                 <el-button  type="danger" size="small">未通过</el-button>
               </div>
@@ -314,6 +315,8 @@ export default {
   dicts: ['mes_mainten_type','sys_yes_no'],
   data() {
     return {
+      //按钮点击
+      activeButton:'qb',
       //表格选中框
       tablech:[],
       //销售和生产按钮
@@ -464,6 +467,7 @@ export default {
       })
     },
     returnxs(){
+      this.qufen=0
       this.queryParams.pageNum=1
       this.queryParams.pageSize=10
       this.getSaleOrders(null)
@@ -523,15 +527,27 @@ export default {
        this.getSaleOrders()
      }
     },
-    click_create(){
+    async click_create(){
       this.queryParams.pageNum=1
       this.queryParams.pageSize=10
       this.loading=true
+      this.qufen=1
       // 筛选
-      this.getSaleOrders(1,4,5)
+      await this.getSaleOrders(1,4,5)
       // platformStatus
       this.click_create_if = true;
-      this.qufen=1
+
+    },
+    over(){
+     if(this.qufen==1){
+       this.workorderList.forEach(f=>{
+         this.expandedWorkorders.push(f.globalOrderNo);
+       })
+     }else if(this.qufen==0){
+       this.workorderList.forEach(f=>{
+         this.expandedWorkorders.splice(f, 1);
+       })
+     }
     },
     passEdit(workorder,state){
       console.log(workorder)
@@ -544,7 +560,7 @@ export default {
         console.log("res:",res)
         if(res.action=='success'){
           this.getSaleOrders()
-          console.log("刷新")
+          this.$message.success('审核通过!');
         }
       })
     },
@@ -611,14 +627,13 @@ export default {
       return statusMap[status]
     },
     toggleChildren(globalOrderNo) {
-      console.log(globalOrderNo)
       const index = this.expandedWorkorders.indexOf(globalOrderNo);
-      if (index > -1) {
+      if (index > -1 && this.qufen!=1) {
         console.log("折叠");
         // this.isAnyExpanded = false;
         // 如果已经展开，移除它
         this.expandedWorkorders.splice(index, 1);
-      } else {
+      } else if(this.qufen!=1){
         console.log("展开");
         // this.isAnyExpanded = true;
         this.expandedWorkorders.push(globalOrderNo);
@@ -709,7 +724,7 @@ export default {
           this.workorderList = this.tooltypeList
         }
         this.loading = false;
-
+        this.over()
       })
       a=null
     },
@@ -775,7 +790,7 @@ export default {
         this.getSaleOrders()
         this.arrs.length=0
         this.selectAll=false
-
+        this.$message.success('审核通过!');
        })
      }else{
         this.$message.warning('请选择相应订单再次点击哦');
@@ -850,6 +865,9 @@ export default {
       }else{
         this.form.globalOrderNo = null;
       }
+    },
+    setActive(btnName) {
+      this.activeButton = btnName
     }
   }
 };
@@ -900,4 +918,23 @@ export default {
 .download-text{
   color: #409eff;
 }
+
+.el-button.active-button {
+  position: relative;
+}
+
+.el-button.active-button::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid white;
+  border-radius: 4px;
+  pointer-events: none;
+  border-color: cadetblue;
+  box-shadow: 0 0 7px skyblue;
+}
+
 </style>
