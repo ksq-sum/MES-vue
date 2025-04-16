@@ -38,7 +38,7 @@
       <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: crimson;border: 1px solid red;" @click="shaixuan(-1,'yq')">已逾期</el-button>
       <el-button  style="margin-left:8px;height:35px;font-size:13px;color:white;background-color: brown;border: 1px solid darkred;" @click="shaixuan(5,'yc')">异常订单</el-button>
       <el-button  style="margin-left:8px;height:35px;font-size:14px;color:white;background-color: coral;border: 1px solid orange;" @click="shaixuan(0,'sk')">待审核</el-button>
-      <el-button v-if="qufen==1" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button>
+<!--      <el-button v-if="qufen==1 || qufen!='yq'|| qufen!=yc || qufen!='sk'" style="margin-left:8px;height:35px;font-size:14px;color:gray;background-color: gainsboro;border: 1px solid lightslategrey;" @click="returnxs">返回</el-button> -->
       <el-button style="color:white;background-color:blue;height:35px;" v-if="qufen==1" @click="click_works">
         创建生产工单</el-button>
       <el-col :span="1.5">
@@ -49,7 +49,7 @@
           icon="el-icon-check"
           @click="handleAdds"
         >
-        <span v-if="qufen==1">批量完成</span><span v-else>批量通过</span>
+       <span>批量通过</span>
         </el-button>
       </el-col>
       <!-- <el-col :span="1.5">
@@ -184,15 +184,13 @@
               <td class="child-cell">{{ child.count }}</td>
               <td class="child-cell">{{ child.local_product_name }}</td>
               <td class="child-cell">
-
-                <!-- {{child.product_image}} -->
-                <a :href="child.product_image" target="_blank">
-
+                <a :href="child.product_image" target="_blank" v-if="child.product_image!='null'">
                   <img :src="child.product_image" alt="Product Image" style="max-width: 100%; height: auto;">
                 </a>
+                <span v-else>暂无图片</span>
                 <!-- 下载图片按钮 -->
                 <div style="display:flex;">
-                  <span @click="downloadImage(child.product_image)" class="download-text">下载图片</span>
+                  <span @click="downloadImage(child.product_image)" class="download-text" v-if="child.product_image!='null'">下载图片</span>
                   <!-- 上传图片的按钮 -->
                   <el-upload
                     class="upload-text"
