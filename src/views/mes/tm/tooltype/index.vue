@@ -492,7 +492,11 @@ export default {
       this.queryParams.pageSize=10
       this.qufen=a
       if(state!=-1){
-        this.getSaleOrders(state,null,null,null)
+        if(a=='sk'){
+          this.getSaleOrders(state,4,null,null)
+        }else{
+          this.getSaleOrders(state,null,null,null)
+        }
       }else{
         this.getSaleOrders(null,null,null,1)
       }
@@ -522,7 +526,7 @@ export default {
      }else if(this.qufen=='yc'){
        this.getSaleOrders(5,null,null,null)
      }else if(this.qufen=='sk'){
-       this.getSaleOrders(0,null,null,null)
+       this.getSaleOrders(0,4,null,null)
      }else{
        this.getSaleOrders()
      }
@@ -539,15 +543,15 @@ export default {
 
     },
     over(){
-     if(this.qufen==1){
-       this.workorderList.forEach(f=>{
-         this.expandedWorkorders.push(f.globalOrderNo);
-       })
-     }else if(this.qufen==0){
-       this.workorderList.forEach(f=>{
-         this.expandedWorkorders.splice(f, 1);
-       })
-     }
+     // if(this.qufen==1){
+     //   this.workorderList.forEach(f=>{
+     //     this.expandedWorkorders.push(f.globalOrderNo);
+     //   })
+     // }else if(this.qufen==0){
+     //   this.workorderList.forEach(f=>{
+     //     this.expandedWorkorders.splice(f, 1);
+     //   })
+     // }
     },
     passEdit(workorder,state){
       console.log(workorder)
@@ -628,12 +632,14 @@ export default {
     },
     toggleChildren(globalOrderNo) {
       const index = this.expandedWorkorders.indexOf(globalOrderNo);
-      if (index > -1 && this.qufen!=1) {
+      //&& this.qufen!=1
+      if (index > -1) {
         console.log("折叠");
         // this.isAnyExpanded = false;
         // 如果已经展开，移除它
         this.expandedWorkorders.splice(index, 1);
-      } else if(this.qufen!=1){
+      //if(this.qufen!=1)
+      } else{
         console.log("展开");
         // this.isAnyExpanded = true;
         this.expandedWorkorders.push(globalOrderNo);
@@ -724,7 +730,8 @@ export default {
           this.workorderList = this.tooltypeList
         }
         this.loading = false;
-        this.over()
+        //伸缩判断
+        // this.over()
       })
       a=null
     },
