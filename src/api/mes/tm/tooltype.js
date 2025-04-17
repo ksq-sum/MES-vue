@@ -120,3 +120,19 @@ export function erpParams() {
   })
 }
 
+// 返回ACTIVE_ITEMS表中,sku关联的craft和depart都为null的sku
+export function returnNullSkus() {
+  return request({
+    url: '/sales-orders-sku/returnNullSkus',
+    method: 'get'
+  })
+}
+
+// 将多出的sku添加到ACTIVE_ITEMS表单中
+export function addSku(data) {
+  return request({
+    url: '/addSku',
+    method: 'post',
+    data: data
+  })
+}

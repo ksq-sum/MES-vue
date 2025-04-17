@@ -305,7 +305,8 @@
 </template>
 
 <script>
-import {Token, listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,cgSeller,createOrders ,updateState,selectAll,selectsku,erpParams} from "@/api/mes/tm/tooltype";
+import {Token, listTooltype, getTooltype, delTooltype, addTooltype, updateTooltype,getSaleOrders,downImage,
+cgSeller,createOrders ,updateState,selectAll,selectsku,erpParams,returnNullSkus,addSku} from "@/api/mes/tm/tooltype";
 import {getSkuActiveItems} from '@/api/mes/md/mdItem'
 import { getToken } from "@/utils/auth";
 import {genCode} from "@/api/system/autocode/rule"
@@ -395,33 +396,42 @@ export default {
     }
     //比较商品表 和销售订单表
     await getSkuActiveItems().then(activeItems => {
-      selectAll().then(allItems => {
-        // 1. 获取activeItems的所有sku（Set用于快速查找）
-        const activeSkus = new Set(activeItems.map(item => item.sku));
-        // 2. 筛选allItems中不存在于activeItems的sku，并去重
-        const uniqueSkus = [
-          ...new Set(  // 去重
-            allItems
-              .filter(item => !activeSkus.has(item.sku))  // 筛选不存在的
-              .map(item => item.sku)  // 只提取sku
-          )
-        ];
-        console.log('SKU数组:', uniqueSkus);
-        data.local_sku =[...uniqueSkus];
-        data.local_sku= data.local_sku.filter(item => item);
-        console.log("最终:",data.local_sku)
-      });
+    selectAll().then(allItems => {
+      // console.log("activeItems:", activeItems)
+      // console.log("allItems:", allItems)
+
+      // 1. 获取activeItems的所有sku（Set用于快速查找）
+      const activeSkus = new Set(activeItems.map(item => item.sku));
+
+      // 2. 筛选allItems中不存在于activeItems的项目，并去重
+      const uniqueItems = Array.from(
+        new Set(  // 去重
+          allItems
+            .filter(item => !activeSkus.has(item.sku))  // 筛选不存在的
+            .map(item => JSON.stringify({ sku: item.sku, msku:item.msku,localProductName: item.localProductName }))  // 转为字符串以便去重
+        )
+      ).map(item => JSON.parse(item));  // 转回对象
+
+      console.log('筛选后的项目:', uniqueItems);
+
+      // 3. 提取sku和localProductName
+      data.local_items = uniqueItems.filter(item => item.sku && item.localProductName);
+
+      console.log("最终:", data.local_items);
+
+      // 传回数据库进行添加
+      addSku(data.local_items).then(result =>{
+        console.log("result:",result)
+      })
+
+      // 将sku关联的craft和depart都为null返回
+      returnNullSkus().then(sku_items =>{
+        console.log("sku_items:",sku_items)
+      }
+      )
+
     });
-
-
-
-
-
-
-
-
-
-
+  });
 
 
     // if(data.local_sku.length>0){
