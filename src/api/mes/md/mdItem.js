@@ -50,3 +50,13 @@ export function getSkuActiveItems() {
     method: 'post',
   })
 }
+
+
+//修改产线和工序
+export function updateActiveItems(data) {
+  return request({
+    url: '/updateActiveItems',
+    method: 'post',
+    data: data
+  })
+}

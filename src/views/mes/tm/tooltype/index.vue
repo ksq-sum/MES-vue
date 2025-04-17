@@ -427,11 +427,17 @@ export default {
       // 将sku关联的craft和depart都为null返回
       returnNullSkus().then(sku_items =>{
         console.log("sku_items:",sku_items)
-      }
-      )
-
+        if(sku_items.length>0){
+          this.$alert('<h3>'+sku_items+'</h3>'+'<h3>关联信息为空，请跳转 “sku关联信息”  页面进行不全!</h3>', 'sku关联信息为空警告', {
+            dangerouslyUseHTMLString: true
+          });
+        }
+      })
     });
   });
+
+
+
 
 
     // if(data.local_sku.length>0){
@@ -450,9 +456,6 @@ export default {
     // timestamp:'' ,
     // app_key:'',
     // })
-
-
-
 
   },
   methods: {

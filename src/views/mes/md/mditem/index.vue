@@ -359,11 +359,29 @@
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog
+      title="sku信息修改"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center>
+       <div style="margin-top: -40px;font-weight: bold;">
+          <h3>当前sku: <span style="color:red">{{getsku.sku}}</span></h3>
+          <el-input  placeholder="请输入工序" v-model="getsku.depart"></el-input>
+          <el-input  placeholder="请输入产线" style="margin-top:20px" v-model="getsku.craft"></el-input>
+        </div>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="skuupdate()">确 定</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-import { listMdItem, getMdItem, delMdItem, addMdItem, updateMdItem,getSkuActiveItems} from "@/api/mes/md/mdItem";
+import { listMdItem, getMdItem, delMdItem, addMdItem, updateMdItem,getSkuActiveItems,updateActiveItems} from "@/api/mes/md/mdItem";
 
 import ItemBom from "./components/itembom.vue";
 import SOPTab from  "./components/sop.vue"
@@ -383,6 +401,14 @@ export default {
   components: { Treeselect,ItemBom,SOPTab,SIPTab,BarcodeImg,printLabel },
   data() {
     return {
+      //选中sku
+      getsku:{
+        sku:'',
+        craft:'',
+        depart:''
+      },
+      //修改弹窗
+      dialogVisible:false,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -495,6 +521,20 @@ export default {
     this.getSkuActive()
   },
   methods: {
+    //修改
+    skuupdate(){
+      const data={
+        craft:this.getsku.craft,
+        sku:this.getsku.sku,
+        depart:this.getsku.depart,
+      }
+      console.log(data)
+      updateActiveItems(data).then(res=>{
+        this.$message.success('修改成功!!');
+        this.dialogVisible=false
+        this.getSkuActive()
+      })
+    },
     getSkuActive(){
       getSkuActiveItems().then(res =>{
         this.itemList = res;
@@ -606,18 +646,24 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
-      this.getTreeselect();
-      const itemId = row.itemId || this.ids;
-      getMdItem(itemId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.optType = "edit";
-        this.title = "修改物料/产品";
-        this.$nextTick(()=>{
-          this.$refs.barcodeImg.getBarcode();
-        })
-      });
+    console.log(row)
+    this.getsku={...row}
+    this.dialogVisible=true
+
+
+      // this.reset();
+      // this.getTreeselect();
+      // const itemId = row.itemId || this.ids;
+      // getMdItem(itemId).then(response => {
+      //   this.form = response.data;
+      //   this.open = true;
+      //   this.optType = "edit";
+      //   this.title = "修改物料/产品";
+      //   this.$nextTick(()=>{
+      //     this.$refs.barcodeImg.getBarcode();
+      //   })
+      // });
+
     },
     /** 提交按钮 */
     submitForm: function() {
