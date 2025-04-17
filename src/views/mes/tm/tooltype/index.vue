@@ -795,8 +795,6 @@ export default {
      }else{
         this.$message.warning('请选择相应订单再次点击哦');
      }
-
-
     },
     // 查询明细按钮操作
     handleView(row){
@@ -926,7 +924,7 @@ export default {
 .el-button.active-button::after {
   content: '';
   position: absolute;
-  top: -3px;
+  top: -5px;
   left: -4px;
   right: -4px;
   bottom: -4px;
