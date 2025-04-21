@@ -184,7 +184,7 @@
             <td></td>
             <td></td>
             <td>
-              <el-button v-if="workorder.planStatu!=2" type="success" size="small" style="width:100px;font-size:14px" @click="updateorders(workorder.children)">完成</el-button>
+              <el-button v-if="workorder.planStatu!=2" type="success" size="small" style="width:100px;font-size:14px" @click="updateorders(workorder.children,workorder.workPlanCode)">完成</el-button>
             </td>
             <!-- 占位以保持表格结构 -->
           </tr>
@@ -220,7 +220,7 @@
               <td>{{ child.platformStatu }}</td>
               <td>{{ child.ifOutTime }}</td>
               <td></td>
-              <td><el-button v-if="child.platformStatu!=2" type="success" size="small" style="width:100px;font-size:14px" @click="updateorder(child.id)">完成</el-button></td>
+              <td><el-button v-if="child.platformStatu!=2" type="success" size="small" style="width:100px;font-size:14px" @click="updateorder(child.sku,workorder.workPlanCode)">完成</el-button></td>
             </tr>
           </template>
         </template>
@@ -334,20 +334,29 @@ export default {
     selectAll(){
 
     },
-    updateorder(a){
-      console.log(a)
+    updateorder(a,b){
+      console.log(b)
       const arr=[]
       arr.push(a)
-      updateorderWork(arr).then(f=>{
+      const data={
+        "ids":arr,
+        "code":b
+      }
+      updateorderWork(data).then(f=>{
         this.getTableData();
       })
     },
-    updateorders(a){
+    updateorders(a,b){
+      console.log(b)
       const arr=[]
       a.forEach(f=>{
-        arr.push(f.id)
+        arr.push(f.sku)
       })
-      updateorderWork(arr).then(f=>{
+      const data={
+        "ids":arr,
+        "code":b
+      }
+      updateorderWork(data).then(f=>{
         this.getTableData();
       })
 

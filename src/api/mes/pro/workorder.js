@@ -81,7 +81,7 @@ export function getProductPlan() {
 export function updateorderWork(data) {
   return request({
     url: '/productionWorks/updateorderWork',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

@@ -193,7 +193,7 @@
                 <div style="display:flex;">
                   <span @click="downloadImage(child.product_image)" class="download-text" v-if="child.product_image!='null'">下载图片</span>
                   <!-- 上传图片的按钮 -->
-                  <el-upload
+                 <!-- <el-upload
                     class="upload-text"
                     action="http://localhost/dev-api/upload"
                     :on-success="handleUploadSuccess"
@@ -203,7 +203,7 @@
                     multiple
                   >
                     <span class="upload-text-link">点击上传</span>
-                  </el-upload>
+                  </el-upload> -->
                 </div>
 
               </td>
@@ -472,12 +472,12 @@ export default {
            cgSeller(data).then(res=>{
              if(res.action=='success'){
                this.getSaleOrders(1,4,5)
-               this.$message.success('生产工单创建成功!!');
                this.qufen=1
              }
            })
         })
       })
+      this.$message.success('生产工单创建成功!!');
     },
     returnxs(){
       this.qufen=0
