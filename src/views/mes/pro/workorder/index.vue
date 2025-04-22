@@ -322,13 +322,14 @@ export default {
   methods: {
     handleSelectChange(){},
     getTableData(){
+       this.workorderList=null
       getProductPlan({
         page:this.queryParams.pageNum-1,
         size:this.queryParams.pageSize,
         workPlanCode:this.queryParams.workPlanCode
       }).then(res => {
         console.log(res)
-        this.workorderList = res.dataList
+        this.workorderList = [...res.dataList]
         this.total = res.total;
         console.log("res:",this.workorderList)
     })
