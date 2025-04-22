@@ -568,6 +568,17 @@ export default {
     },
     passEdit(workorder,state){
       console.log(workorder)
+      let tfalse=false
+      if(workorder.children.length>0){
+        workorder.children.forEach(f=>{
+          if(f.sku=="" || f.sku==null){
+            tfalse=true
+          }
+        })
+      }
+      if(tfalse){
+        state=5
+      }
       const data = {
         "globalOrderNo":workorder.globalOrderNo,
         "platformStatus":state
@@ -577,7 +588,11 @@ export default {
         console.log("res:",res)
         if(res.action=='success'){
           this.getSaleOrders()
-          this.$message.success('审核通过!');
+          if(tfalse){
+            this.$message.warning('该销售订单sku为空，已变更为异常订单!');
+          }else{
+            this.$message.success('审核通过!');
+          }
         }
       })
     },

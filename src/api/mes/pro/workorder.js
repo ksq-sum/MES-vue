@@ -69,10 +69,11 @@ export function dofinish(workorderId){
 }
 
 // 查询生产计划单
-export function getProductPlan() {
+export function getProductPlan(query) {
   return request({
     url: '/productionOrders/returnProductionOrder',
     method: 'post',
+    params: query
   })
 }
 

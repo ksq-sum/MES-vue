@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
     <!-- 生产工单 -->
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="工单编码" prop="workorderCode">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="148px" style="margin-left:-50px;">
+      <el-form-item label="销售订单编号" prop="workorderCode">
         <el-input
-          v-model="queryParams.workorderCode"
-          placeholder="请输入工单"
+          v-model="queryParams.workPlanCode"
+          placeholder="请输入销售订单编号"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="工单名称" prop="workorderName">
+      <!-- <el-form-item label="工单名称" prop="workorderName">
         <el-input
           v-model="queryParams.workorderName"
           placeholder="请输入工单名称"
@@ -75,7 +75,7 @@
                         value-format="yyyy-MM-dd"
                         placeholder="请选择需求日期">
         </el-date-picker>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -159,7 +159,7 @@
       <tbody>
         <template v-for="workorder in workorderList" >
           <!-- 父级行 -->
-          <tr class="expandable" :key="workorder.workPlanCode"><!-- @click="toggleChildren(workorder.workPlanCode)"-->
+          <tr class="expandable" :key="workorder.workPlanCode" @click="toggleChildren(workorder.workPlanCode)">
             <td>
               <el-checkbox v-model="workorder.selected" @click.stop @change="handleSelectChange(workorder)"></el-checkbox>
             </td>
@@ -189,7 +189,7 @@
             <!-- 占位以保持表格结构 -->
           </tr>
           <!-- 子级行 -->
-          <template >
+          <template v-if="isExpanded(workorder.workPlanCode)">
             <tr v-for="child in workorder.children" :key="child.id" class="child">
               <td class="child-cell">
                 <el-checkbox v-model="child.selected" @change="handleChildSelectChange(child, workorder)"></el-checkbox>
@@ -232,7 +232,7 @@
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
-      @pagination="getList"
+      @pagination="getTableData"
     />
 
   </div>
@@ -288,7 +288,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        workorderCode: null,
+        workPlanCode: null,
         workorderName: null,
         orderSource: null,
         sourceCode: null,
@@ -311,7 +311,8 @@ export default {
       },
       // 表单参数
       form: {},
-      workorderList:[]
+      workorderList:[],
+      expandedWorkorders: [],
     };
   },
   created() {
@@ -321,8 +322,12 @@ export default {
   methods: {
     handleSelectChange(){},
     getTableData(){
-      getProductPlan().then(res => {
-        //
+      getProductPlan({
+        page:this.queryParams.pageNum-1,
+        size:this.queryParams.pageSize,
+        workPlanCode:this.queryParams.workPlanCode
+      }).then(res => {
+        console.log(res)
         this.workorderList = res.dataList
         this.total = res.total;
         console.log("res:",this.workorderList)
@@ -333,6 +338,25 @@ export default {
     },
     selectAll(){
 
+    },
+    toggleChildren(workPlanCode) {
+      const index = this.expandedWorkorders.indexOf(workPlanCode);
+      //&& this.qufen!=1
+      if (index > -1) {
+        console.log("折叠");
+        // this.isAnyExpanded = false;
+        // 如果已经展开，移除它
+        this.expandedWorkorders.splice(index, 1);
+      //if(this.qufen!=1)
+      } else{
+        console.log("展开");
+        // this.isAnyExpanded = true;
+        this.expandedWorkorders.push(workPlanCode);
+      }
+    },
+    isExpanded(workPlanCode) {
+      // 检查给定的工单 ID 是否在展开列表中
+      return this.expandedWorkorders.includes(workPlanCode);
     },
     updateorder(a,b){
       console.log(b)
@@ -433,12 +457,15 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.getList();
+      this.getTableData();
+      this.queryParams.workPlanCode=null
     },
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
+      this.queryParams.workPlanCode=null
+      this.getTableData();
     },
     //从BOM行中直接新增
     handleSubAdd(row){
