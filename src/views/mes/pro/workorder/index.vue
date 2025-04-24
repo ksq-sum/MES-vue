@@ -115,7 +115,7 @@
           v-hasPermi="['mes:pro:workorder:remove']"
         >删除</el-button>
       </el-col> -->
-      <el-col :span="1.5">
+   <!--   <el-col :span="1.5">
         <el-button
           type="warning"
           plain
@@ -125,7 +125,7 @@
           v-hasPermi="['mes:pro:workorder:export']"
         >导出</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
 
     <div class="table-container">
@@ -146,14 +146,14 @@
           <th style="width: 150px">产品名称</th>
           <th style="width: 150px">产线</th>
           <th style="width: 150px">工序</th>
-          <th style="width: 150px">生产图</th>
+          <th style="width: 150px">备注</th>
           <th style="width: 150px">渲染图</th>
           <th style="width: 150px">订单付款时间</th>
           <th style="width: 150px">约定结束时间</th>
           <th style="width: 150px">实际结束时间</th>
           <th style="width: 150px">工单状态</th>
           <th style="width: 150px">是否逾期</th>
-          <th style="width: 150px">操作</th>
+          <th style="width: 280px">操作</th>
         </tr>
       </thead>
       <tbody>
@@ -165,8 +165,8 @@
             </td>
             <td>{{ workorder.workPlanCode }}</td>
             <td>
-              <span v-if="workorder.planStatu==1">进行中</span>
               <span v-if="workorder.planStatu==2">已完成</span>
+              <span v-else>进行中</span> <!-- v-if="workorder.planStatu==1" -->
             </td>
             <td ></td>
             <td ></td>
@@ -176,7 +176,10 @@
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
+            <td style="color: red;" @click.stop="toggleChildren()">
+              <span v-if="workorder.remack!=null && workorder.remack!=''" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true">{{workorder.remack}}</span>
+              <span v-else style="color:blue" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true">添加备注</span>
+            </td>
             <td></td>
             <td></td>
             <td></td>
@@ -184,7 +187,9 @@
             <td></td>
             <td></td>
             <td>
-              <el-button v-if="workorder.planStatu!=2" type="success" size="small" style="width:100px;font-size:14px" @click="updateorders(workorder.children,workorder.workPlanCode)">完成</el-button>
+              <el-button v-if="workorder.planStatu!=2" type="success" size="small" style="width:80px;font-size:14px" @click="updateorders(workorder.children,workorder.workPlanCode)">完成</el-button>
+              <el-button  type="primary" size="small" style="width:80px;font-size:14px" >上传</el-button>
+              <el-button  type="warning" size="small" style="width:80px;font-size:14px" >下载</el-button>
             </td>
             <!-- 占位以保持表格结构 -->
           </tr>
@@ -206,9 +211,9 @@
               <td class="child-cell">{{ child.craft }}</td>
               <td class="child-cell">{{ child.depart }}</td>
               <td class="child-cell">
-                <a :href="child.productImage" target="_blank">
+                <!-- <a :href="child.productImage" target="_blank">
                   <img :src="child.productImage" alt="Product Image" style="max-width: 100%; height: auto;">
-                </a>
+                </a> -->
               </td>
               <td class="child-cell">
                 <a :href="child.renderingImage" target="_blank">
@@ -234,12 +239,26 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getTableData"
     />
-
+    <el-dialog
+      title="添加备注"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center>
+       <div style="margin-top: -40px;font-weight: bold;">
+          <h3>当前生产计划: <span style="color:red">{{beizhu.code}}</span></h3>
+          <el-input  placeholder="请输入备注" v-model="beizhu.remack"></el-input>
+        </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="insertbz()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
+
 </template>
 
 <script>
-import { listWorkorder, getWorkorder, delWorkorder, addWorkorder, updateWorkorder ,dofinish,getProductPlan,updateorderWork} from "@/api/mes/pro/workorder";
+import { listWorkorder, getWorkorder, delWorkorder, addWorkorder, updateWorkorder ,dofinish,getProductPlan,updateorderWork,updateremack} from "@/api/mes/pro/workorder";
 import { cgSeller} from "@/api/mes/tm/tooltype";
 import Workorderbom from "./bom/bom.vue";
 import WorkorderItemList from "./items/item.vue";
@@ -265,6 +284,13 @@ export default {
   },
   data() {
     return {
+      //备注相关属性
+      beizhu:{
+        code:'',
+        remack:'',
+      },
+      //备注弹窗
+      dialogVisible:false,
       //自动生成编码
       autoGenFlag:false,
       optType: undefined,
@@ -339,6 +365,17 @@ export default {
     },
     selectAll(){
 
+    },
+    insertbz(){
+      const data={
+        "id":this.beizhu.code,
+        "remack":this.beizhu.remack
+      }
+      updateremack(data).then(res=>{
+        this.getTableData();
+        this.$modal.msgSuccess("备注更改成功")
+        this.dialogVisible=false
+      })
     },
     toggleChildren(workPlanCode) {
       const index = this.expandedWorkorders.indexOf(workPlanCode);

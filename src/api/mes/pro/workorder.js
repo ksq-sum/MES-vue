@@ -86,3 +86,12 @@ export function updateorderWork(data) {
     data: data
   })
 }
+
+//修改备注
+export function updateremack(data) {
+  return request({
+    url: '/productionOrders/updateremack',
+    method: 'post',
+    params: data
+  })
+}
