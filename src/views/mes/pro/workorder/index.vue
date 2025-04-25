@@ -177,8 +177,8 @@
             <td></td>
             <td></td>
             <td style="color: red;" @click.stop="toggleChildren()">
-              <span v-if="workorder.remack!=null && workorder.remack!=''" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true">{{workorder.remack}}</span>
-              <span v-else style="color:blue" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true">添加备注</span>
+              <span v-if="workorder.remack!=null && workorder.remack!=''" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true,beizhu.pd='jh'">{{workorder.remack}}</span>
+              <span v-else style="color:blue" @click="beizhu.code=workorder.workPlanCode,beizhu.remack=workorder.remack,dialogVisible=true,beizhu.pd='jh'">添加备注</span>
             </td>
             <td></td>
             <td></td>
@@ -188,7 +188,7 @@
             <td></td>
             <td>
               <el-button v-if="workorder.planStatu!=2" type="success" size="small" style="width:80px;font-size:14px" @click="updateorders(workorder.children,workorder.workPlanCode)">完成</el-button>
-              <el-button  type="primary" size="small" style="width:80px;font-size:14px" >上传</el-button>
+              <!-- <el-button  type="primary" size="small" style="width:80px;font-size:14px" >上传</el-button> -->
               <el-button  type="warning" size="small" style="width:80px;font-size:14px" >下载</el-button>
             </td>
             <!-- 占位以保持表格结构 -->
@@ -210,15 +210,30 @@
               <td class="child-cell">{{ child.localName }}</td>
               <td class="child-cell">{{ child.craft }}</td>
               <td class="child-cell">{{ child.depart }}</td>
-              <td class="child-cell">
+              <td class="child-cell" style="color:crimson">
+                <span v-if="child.remack!=null && child.remack!=''" @click="beizhu.code=child.id,beizhu.remack=child.remack,dialogVisible=true,beizhu.pd='gd'">{{child.remack}}</span>
+                <span v-else style="color:blue" @click="beizhu.code=child.id,beizhu.remack=child.remack,dialogVisible=true,beizhu.pd='gd'">添加备注</span>
                 <!-- <a :href="child.productImage" target="_blank">
                   <img :src="child.productImage" alt="Product Image" style="max-width: 100%; height: auto;">
                 </a> -->
               </td>
               <td class="child-cell">
-                <a :href="child.renderingImage" target="_blank">
-                  <img :src="child.renderingImage" alt="Rendering Image" style="max-width: 100%; height: auto;">
-                </a>
+                <el-upload
+                  action="#"
+                  :http-request="(params) => img(params, child.id)"
+                  :show-file-list="false">
+                  <div v-if="imgpd(child.renderingImage)==true">
+                    <a :href="child.renderingImage" target="_blank">
+                      <img :src="child.renderingImage" alt="Rendering Image" style="max-width: 100%; height: auto;">
+                    </a>
+                  </div>
+                  <div v-if="imgpd(child.renderingImage)==false">
+                    <a :href="child.renderingImage" target="_blank">
+                      <img :src="imageCache[child.renderingImage]" alt="Rendering Image" style="max-width: 100%; height: auto;">
+                    </a>
+                  </div>
+                </el-upload>
+
               </td>
               <td>{{ child.orderPayTime }}</td>
               <td>{{ child.planEndTime }}</td>
@@ -245,7 +260,7 @@
       width="30%"
       center>
        <div style="margin-top: -40px;font-weight: bold;">
-          <h3>当前生产计划: <span style="color:red">{{beizhu.code}}</span></h3>
+          <h3>当前生产计划/工单: <span style="color:red">{{beizhu.code}}</span></h3>
           <el-input  placeholder="请输入备注" v-model="beizhu.remack"></el-input>
         </div>
       <span slot="footer" class="dialog-footer">
@@ -258,9 +273,11 @@
 </template>
 
 <script>
-import { listWorkorder, getWorkorder, delWorkorder, addWorkorder, updateWorkorder ,dofinish,getProductPlan,updateorderWork,updateremack} from "@/api/mes/pro/workorder";
+import { listWorkorder, getWorkorder, delWorkorder, addWorkorder, updateWorkorder ,dofinish,getProductPlan,updateorderWork,
+updateremack,updateremackWork,updateImg,img1,one} from "@/api/mes/pro/workorder";
 import { cgSeller} from "@/api/mes/tm/tooltype";
 import Workorderbom from "./bom/bom.vue";
+import axios from 'axios';
 import WorkorderItemList from "./items/item.vue";
 import ItemSelect  from "@/components/itemSelect/single.vue";
 import ClientSelect from "@/components/clientSelect/single.vue";
@@ -284,10 +301,13 @@ export default {
   },
   data() {
     return {
+      //图片
+      fileList:'',
       //备注相关属性
       beizhu:{
         code:'',
         remack:'',
+        pd:''
       },
       //备注弹窗
       dialogVisible:false,
@@ -339,6 +359,8 @@ export default {
       form: {},
       workorderList:[],
       expandedWorkorders: [],
+      path:'',
+      imageCache: {},
     };
   },
   created() {
@@ -356,6 +378,16 @@ export default {
       }).then(res => {
         console.log(res)
         this.workorderList = [...res.dataList]
+        this.workorderList.forEach(f=>{
+          if(f.children.length>0){
+            f.children.forEach(c=>{
+              if (!c.renderingImage.startsWith('http://') && !c.renderingImage.startsWith('https://') && c.renderingImage!=null && c.renderingImage!='') {
+                console.log(this.imageCache)
+                this.getImageUrl(c.renderingImage)
+              }
+            })
+          }
+        })
         this.total = res.total;
         console.log("res:",this.workorderList)
     })
@@ -366,16 +398,67 @@ export default {
     selectAll(){
 
     },
+    img(f,response){
+      console.log(f)
+      const formData = new FormData();
+      formData.append('image',f.file);
+      img1(formData).then(name=>{
+        const data={
+          "id":response,
+          "img":name
+        }
+        updateImg(data).then(res=>{
+          this.getTableData();
+          this.$modal.msgSuccess("渲染图更改成功")
+        })
+      })
+    },
+     async getImageUrl(path) {
+       if (this.imageCache[path]) {
+             return this.imageCache[path];
+       }
+       // 3. 异步加载并缓存
+       try {
+         const blob = await one({ o: path });
+         const blobUrl = URL.createObjectURL(blob);
+         this.$set(this.imageCache, path, blobUrl); // 响应式更新
+         this.$forceUpdate();
+       } catch (error) {
+         console.error('加载失败:', path, error);
+       }
+      },
+      beforeDestroy() {
+        // 释放所有 Blob URL
+        Object.values(this.imageCache).forEach(url => {
+          URL.revokeObjectURL(url);
+        });
+      },
+      imgpd(im){
+        if (im.startsWith('http://') || im.startsWith('https://')) {
+          return true;
+        }else{
+          console.log(im)
+          return false;
+        }
+      },
     insertbz(){
       const data={
         "id":this.beizhu.code,
         "remack":this.beizhu.remack
       }
-      updateremack(data).then(res=>{
-        this.getTableData();
-        this.$modal.msgSuccess("备注更改成功")
-        this.dialogVisible=false
-      })
+      if(this.beizhu.pd=='jh'){
+        updateremack(data).then(res=>{
+          this.getTableData();
+          this.$modal.msgSuccess("备注更改成功")
+          this.dialogVisible=false
+        })
+      }else if(this.beizhu.pd=='gd'){
+        updateremackWork(data).then(res=>{
+          this.getTableData();
+          this.$modal.msgSuccess("备注更改成功")
+          this.dialogVisible=false
+        })
+      }
     },
     toggleChildren(workPlanCode) {
       const index = this.expandedWorkorders.indexOf(workPlanCode);

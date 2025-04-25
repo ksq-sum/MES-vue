@@ -9,15 +9,15 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <!-- <el-form-item label="类型名称" prop="platformOrderName">
+      <el-form-item label="店铺订单号" prop="platformOrderName">
         <el-input
           v-model="queryParams.platformOrderName"
-          placeholder="请输入类型名称"
+          placeholder="请输入店铺订单号"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="保养维护类型" prop="remark">
+    <!--  <el-form-item label="保养维护类型" prop="remark">
         <el-select v-model="queryParams.remark" placeholder="请选择保养维护类型" clearable>
           <el-option
             v-for="dict in dict.type.mes_mainten_type"
@@ -709,6 +709,7 @@ export default {
         a:state,
         b:state1,
         globalOrderNo:this.queryParams.globalOrderNo,
+        platformOrderName:this.queryParams.platformOrderName,
         ifOutTime:ifOutTime,
         timeout: 12000    // 超时时间(ms)
       }

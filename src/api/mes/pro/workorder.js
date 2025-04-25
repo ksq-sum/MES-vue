@@ -87,7 +87,7 @@ export function updateorderWork(data) {
   })
 }
 
-//修改备注
+//修改备注-生产计划
 export function updateremack(data) {
   return request({
     url: '/productionOrders/updateremack',
@@ -95,3 +95,41 @@ export function updateremack(data) {
     params: data
   })
 }
+
+//修改备注-生产工单
+export function updateremackWork(data) {
+  return request({
+    url: '/productionWorks/updateremackWork',
+    method: 'post',
+    params: data
+  })
+}
+
+
+//修改上传工单图片
+export function updateImg(data) {
+  return request({
+    url: '/productionWorks/updateImg',
+    method: 'post',
+    params: data
+  })
+}
+
+export function img1(data) {
+  return request({
+    url: '/productionWorks/img1',
+    method: 'post',
+    data: data
+  })
+}
+
+
+export function one(data) {
+  return request({
+    url: '/productionWorks/one',
+    method: 'post',
+    params: data,
+    responseType: 'blob'
+  })
+}
+
